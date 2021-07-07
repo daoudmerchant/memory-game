@@ -6,6 +6,7 @@
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   grid-template-rows: repeat(3, 1fr);
+  transition: 0.3s linear all;
 }
 
 img {

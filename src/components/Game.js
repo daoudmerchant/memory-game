@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import "../styles/Game.css";
 import Album from "./Album";
 
@@ -22,8 +22,6 @@ const Game = () => {
     };
   });
 
-  const [state, setState] = useState(initialState);
-
   // return random tile array
   const randomiseTiles = () => {
     const getRandomAlbum = () => {
@@ -40,12 +38,25 @@ const Game = () => {
     }
     return albumTileSet;
   };
-  console.log(randomiseTiles());
+
+  const [tileSet, setTileSet] = useState(randomiseTiles());
+
+  // report loading
+
+  const [isLoaded, setIsLoaded] = useState(0);
+  const reportLoaded = () => {
+    setIsLoaded(isLoaded + 1);
+  };
 
   return (
-    <div id="game">
-      {randomiseTiles().map((number) => {
-        return <Album src={images[`${number}.jpg`].default} />;
+    <div id="game" style={{ opacity: isLoaded === 9 ? "100%" : "0%" }}>
+      {tileSet.map((number) => {
+        return (
+          <Album
+            src={images[`${number}.jpg`].default}
+            reportLoaded={reportLoaded}
+          />
+        );
       })}
     </div>
   );
