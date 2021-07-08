@@ -1,13 +1,13 @@
 // Import all images (Webpack)
 const importAll = (r) => {
   console.log("Importing images");
-  let albums = {};
+  let albums = [];
   r.keys().forEach((item) => {
-    albums[item.replace("./", "")] = {
+    albums.push({
       ...r(item),
       id: item.slice(2, 4),
       clickCount: 0,
-    };
+    });
   });
   return albums;
 };
