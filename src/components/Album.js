@@ -8,7 +8,9 @@ const Album = (props) => {
       src={src}
       alt="album-art"
       onLoad={reportLoaded}
-      onClick={() => reportClick(albumId)}
+      onClick={() => {
+        reportClick(albumId);
+      }}
     />
   );
 };

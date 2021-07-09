@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import Album from "./Album";
 import { images } from "../imageLoader";
 import "../styles/Game.css";
@@ -6,19 +6,18 @@ import "../styles/Game.css";
 // SET GRID SIZE (no. of tiles per length of square)
 const gridSize = 3;
 
-const Game = () => {
+const Game = ({ updateScore }) => {
   console.log("Rendering the game"); // FIX?: Game rendered 10 times as loading state updates
 
   const [gameState, setGameState] = useState(images);
   const [tileSet, setTileSet] = useState(null);
   const gridCount = gridSize ** 2;
 
-  console.log(gameState.map((album) => album.clickCount));
+  console.log(gameState.length);
 
-  // setTileSet after render to keep useState immutable
-  useEffect(() => {
-    // return random tile array
-    const randomiseTiles = (gridCount) => {
+  // return random tile array
+  const randomiseTiles = useCallback(
+    (gridCount) => {
       console.log("Randomising Tiles");
 
       const getRandomIndex = () => {
@@ -38,13 +37,19 @@ const Game = () => {
         }
       }
 
-      const albumSet = albumIds.map((id) => gameState[id]);
-      if (!albumSet.some((album) => album.clickCount !== 0)) {
-        // not a single album unclicked
-      }
-      return albumSet;
-    };
+      console.log(albumIds);
 
+      const albumSet = albumIds.map((id) => gameState[id]);
+      // if (!albumSet.some((album) => album.clickCount !== 0)) {
+      //   // not a single album unclicked
+      // }
+      return albumSet;
+    },
+    [gameState]
+  );
+
+  // setTileSet after render to keep useState immutable
+  useEffect(() => {
     if (!tileSet) {
       // // promisify calculation (necessary for slow computers?)
       // const getTileSet = async () => {
@@ -55,13 +60,24 @@ const Game = () => {
 
       setTileSet(randomiseTiles(gridCount));
     }
-  }, [tileSet, gameState, gridCount]);
+  }, [tileSet]);
 
   // report loading
   const [isLoaded, setIsLoaded] = useState(0);
   const reportLoaded = () => {
-    setIsLoaded(isLoaded + 1);
+    setIsLoaded((prevIsLoaded) => {
+      return prevIsLoaded + 1;
+    });
   };
+
+  // setTileSet on album click
+  useEffect(() => {
+    setTileSet(randomiseTiles(gridCount));
+  }, [gameState, randomiseTiles, gridCount]);
+
+  useEffect(() => {
+    setIsLoaded(0);
+  }, [gameState]);
 
   // update game state on click
   const updateGameState = (id) => {
@@ -74,6 +90,8 @@ const Game = () => {
       };
       return newGameState;
     });
+    // FIX: Improve score handling
+    updateScore();
   };
 
   const gameStyle =
@@ -95,7 +113,9 @@ const Game = () => {
     <>
       {isLoaded < gridCount && <h1>Loader</h1>}
       <div id="game" style={gameStyle}>
+        {/* sometimes tries to render before tileSet ready */}
         {tileSet.map((album) => {
+          console.log("Passing album");
           return (
             <Album
               key={`album-${album.id}`}
