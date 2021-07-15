@@ -6,7 +6,7 @@ const importAll = (r) => {
     albums.push({
       ...r(item),
       id: item.slice(2, 4),
-      clickCount: 0,
+      clicked: false,
       style: {
         display: "none",
       },

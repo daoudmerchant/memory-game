@@ -7,7 +7,7 @@ import "../styles/Game.css";
 const gridSize = 3;
 
 const Game = ({ updateScore }) => {
-  console.log("Rendering the game"); // FIX?: Game rendered 10 times as loading state updates
+  // console.log("Rendering the game"); // FIX?: Game rendered 10 times as loading state updates
 
   const [gameState, setGameState] = useState(images);
   const [tileSet, setTileSet] = useState(null);
@@ -42,60 +42,88 @@ const Game = ({ updateScore }) => {
       // albumIndexes now array of random non-repeating indexes
 
       const albumSet = albumIndexes.map((id) => gameState[id]);
-      // if (!albumSet.some((album) => album.clickCount !== 0)) {
+      // if (!albumSet.some((album) => !album.clicked)) {
       //   // not a single album unclicked
       // }
-      return albumSet;
+      return new Promise((resolve) => resolve(albumSet));
     },
     [gameState]
   );
 
+  const resetTileSet = async () => {
+    const newTileSet = await randomiseTiles(gridCount);
+    setTileSet(newTileSet);
+  };
+
   // setTileSet after render to keep useState immutable
   useEffect(() => {
     if (!tileSet) {
-      // // promisify calculation (necessary for slow computers?)
-      // const getTileSet = async () => {
-      //   return await randomiseTiles(gridSize);
-      // };
-      // // set state only when promise resolves
-      // getTileSet().then((stateTileSet) => setTileSet(stateTileSet));
-
-      setTileSet(randomiseTiles(gridCount));
+      resetTileSet();
     }
   }, []);
 
-  // report loading
+  /* TODO: report loading?
   const [isLoaded, setIsLoaded] = useState(0);
   const reportLoaded = () => {
     setIsLoaded((prevIsLoaded) => {
-      return prevIsLoaded + 1;
+      console.log("Updating load count");
+      if (prevIsLoaded < gridCount) {
+        return prevIsLoaded + 1;
+      }
+      return 1;
     });
   };
 
-  // !!! CAUSES TWO RANDOM RENDERS AT START
-  // // setTileSet on album click
-  // useEffect(() => {
-  //   setTileSet(randomiseTiles(gridCount));
-  // }, [gameState, randomiseTiles, gridCount]);
-
-  useEffect(() => {
-    setIsLoaded(0);
-  }, [gameState]);
+  */
 
   // update game state on click
   const updateGameState = (id) => {
     const index = Number(id);
+    let isNewClick;
+    let resetGameState;
+
+    if (gameState[index].clicked === false) {
+      // hitherto unclicked
+      isNewClick = true;
+      resetGameState = false;
+    } else {
+      // previously clicked
+      isNewClick = false;
+      resetGameState = true;
+    }
+
+    updateScore(isNewClick);
+
+    if (resetGameState) {
+      setGameState(images);
+    } else {
+      setGameState((prevGameState) => {
+        const newGameState = [...prevGameState];
+        newGameState[index] = {
+          ...prevGameState[index],
+          clicked: true,
+        };
+        return newGameState;
+      });
+    }
+
     setGameState((prevGameState) => {
-      const newGameState = [...prevGameState];
-      newGameState[index] = {
-        ...prevGameState[index],
-        clickCount: prevGameState[index].clickCount + 1,
-      };
-      return newGameState;
+      if (prevGameState[index].clicked === false) {
+        const newGameState = [...prevGameState];
+        // hitherto unclicked
+        isNewClick = true;
+        newGameState[index] = {
+          ...prevGameState[index],
+          clicked: true,
+        };
+        return newGameState;
+      } else {
+        // has already been clicked
+        isNewClick = false;
+        return images;
+      }
     });
-    // FIX: Improve score handling
-    updateScore();
-    setTileSet(randomiseTiles(gridCount));
+    resetTileSet();
   };
 
   const gameStyle = {
@@ -107,23 +135,18 @@ const Game = ({ updateScore }) => {
   };
 
   return !tileSet ? null : (
-    // FIX loader from start?
-    <>
-      {isLoaded < gridCount && <h1>Loader</h1>}
-      <div id="game" style={gameStyle}>
-        {tileSet.map((album) => {
-          return (
-            <Album
-              key={`album-${album.id}`}
-              src={album.default}
-              albumId={album.id}
-              reportLoaded={reportLoaded}
-              reportClick={updateGameState}
-            />
-          );
-        })}
-      </div>
-    </>
+    <div id="game" style={gameStyle}>
+      {tileSet.map((album) => {
+        return (
+          <Album
+            key={`album-${album.id}`}
+            src={album.default}
+            albumId={album.id}
+            reportClick={updateGameState}
+          />
+        );
+      })}
+    </div>
   );
 };
 
