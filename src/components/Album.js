@@ -5,7 +5,7 @@ const Album = ({ src, reportClick, albumId }) => {
     <img
       key={`image-${albumId}`}
       src={src}
-      alt="album-art"
+      alt={`album-art-${albumId}`}
       onClick={() => {
         reportClick(albumId);
       }}

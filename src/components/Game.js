@@ -107,31 +107,13 @@ const Game = ({ updateScore }) => {
       });
     }
 
-    setGameState((prevGameState) => {
-      if (prevGameState[index].clicked === false) {
-        const newGameState = [...prevGameState];
-        // hitherto unclicked
-        isNewClick = true;
-        newGameState[index] = {
-          ...prevGameState[index],
-          clicked: true,
-        };
-        return newGameState;
-      } else {
-        // has already been clicked
-        isNewClick = false;
-        return images;
-      }
-    });
     resetTileSet();
   };
 
   const gameStyle = {
     // FIX: pop-in
-    display: "grid",
     gridTemplateColumns: `repeat(${gridSize}, 1fr)`,
     gridTemplateRows: `repeat(${gridSize}, 1fr)`,
-    opacity: "100%",
   };
 
   return !tileSet ? null : (

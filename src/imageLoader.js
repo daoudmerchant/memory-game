@@ -5,7 +5,8 @@ const importAll = (r) => {
   r.keys().forEach((item) => {
     albums.push({
       ...r(item),
-      id: item.slice(2, 4),
+      // picture count begins at 1
+      id: Number(item.slice(2, 4)) - 1,
       clicked: false,
       style: {
         display: "none",
