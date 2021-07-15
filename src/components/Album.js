@@ -9,6 +9,7 @@ const Album = (props) => {
       alt="album-art"
       onLoad={reportLoaded}
       onClick={() => {
+        console.log("Reporting click");
         reportClick(albumId);
       }}
     />

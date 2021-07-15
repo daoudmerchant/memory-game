@@ -13,33 +13,35 @@ const Game = ({ updateScore }) => {
   const [tileSet, setTileSet] = useState(null);
   const gridCount = gridSize ** 2;
 
-  console.log(gameState.length);
-
   // return random tile array
   const randomiseTiles = useCallback(
     (gridCount) => {
       console.log("Randomising Tiles");
 
-      const getRandomIndex = () => {
-        const albumQuantity = Object.keys(gameState).length;
-        // random number between 1 and maximum
-        return Math.floor(Math.random() * albumQuantity);
-      };
-      let albumIds = [];
+      const albumQuantity = Object.keys(gameState).length;
+      let albumChoices = [];
+      for (let i = 0; i < albumQuantity; i++) {
+        albumChoices.push(i);
+      }
+      // albumChoices now array of all available indexes
 
-      for (let i = 0; i < gridCount; i++) {
-        const newRandomIndex = getRandomIndex();
-        if (albumIds.some((id) => id === newRandomIndex)) {
-          // is duplicate, try again
-          i--;
+      let albumIndexes = [];
+      for (let j = 0; j < gridCount; j++) {
+        const newRandomNumber = Math.floor(Math.random() * albumChoices.length);
+        const newRandomIndex = albumChoices[newRandomNumber];
+        albumIndexes.push(newRandomIndex);
+        if (newRandomNumber < albumChoices.length - 1) {
+          // not the last item in the array
+          albumChoices[newRandomNumber] = albumChoices.pop();
+          // replace with last item of array
         } else {
-          albumIds.push(newRandomIndex);
+          // last item of array
+          albumChoices.pop();
         }
       }
+      // albumIndexes now array of random non-repeating indexes
 
-      console.log(albumIds);
-
-      const albumSet = albumIds.map((id) => gameState[id]);
+      const albumSet = albumIndexes.map((id) => gameState[id]);
       // if (!albumSet.some((album) => album.clickCount !== 0)) {
       //   // not a single album unclicked
       // }
@@ -60,7 +62,7 @@ const Game = ({ updateScore }) => {
 
       setTileSet(randomiseTiles(gridCount));
     }
-  }, [tileSet]);
+  }, []);
 
   // report loading
   const [isLoaded, setIsLoaded] = useState(0);
@@ -70,10 +72,11 @@ const Game = ({ updateScore }) => {
     });
   };
 
-  // setTileSet on album click
-  useEffect(() => {
-    setTileSet(randomiseTiles(gridCount));
-  }, [gameState, randomiseTiles, gridCount]);
+  // !!! CAUSES TWO RANDOM RENDERS AT START
+  // // setTileSet on album click
+  // useEffect(() => {
+  //   setTileSet(randomiseTiles(gridCount));
+  // }, [gameState, randomiseTiles, gridCount]);
 
   useEffect(() => {
     setIsLoaded(0);
@@ -92,30 +95,23 @@ const Game = ({ updateScore }) => {
     });
     // FIX: Improve score handling
     updateScore();
+    setTileSet(randomiseTiles(gridCount));
   };
 
-  const gameStyle =
-    isLoaded === gridCount
-      ? {
-          // FIX: pop-in
-          display: "grid",
-          gridTemplateColumns: `repeat(${gridSize}, 1fr)`,
-          gridTemplateRows: `repeat(${gridSize}, 1fr)`,
-          opacity: "100%",
-        }
-      : {
-          display: "none",
-          opacity: "0",
-        };
+  const gameStyle = {
+    // FIX: pop-in
+    display: "grid",
+    gridTemplateColumns: `repeat(${gridSize}, 1fr)`,
+    gridTemplateRows: `repeat(${gridSize}, 1fr)`,
+    opacity: "100%",
+  };
 
   return !tileSet ? null : (
     // FIX loader from start?
     <>
       {isLoaded < gridCount && <h1>Loader</h1>}
       <div id="game" style={gameStyle}>
-        {/* sometimes tries to render before tileSet ready */}
         {tileSet.map((album) => {
-          console.log("Passing album");
           return (
             <Album
               key={`album-${album.id}`}

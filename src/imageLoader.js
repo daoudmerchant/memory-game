@@ -7,6 +7,9 @@ const importAll = (r) => {
       ...r(item),
       id: item.slice(2, 4),
       clickCount: 0,
+      style: {
+        display: "none",
+      },
     });
   });
   return albums;
