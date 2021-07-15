@@ -11,6 +11,7 @@ const Game = ({ updateScore }) => {
 
   const [gameState, setGameState] = useState(images);
   const [tileSet, setTileSet] = useState(null);
+  const [opacity, setOpacity] = useState("0%");
   const gridCount = gridSize ** 2;
 
   // return random tile array
@@ -62,6 +63,11 @@ const Game = ({ updateScore }) => {
     }
   }, []);
 
+  useEffect(() => {
+    setOpacity("0%");
+    setTimeout(() => setOpacity("100%"), 200);
+  }, [gameState]);
+
   /* TODO: report loading?
   const [isLoaded, setIsLoaded] = useState(0);
   const reportLoaded = () => {
@@ -77,7 +83,7 @@ const Game = ({ updateScore }) => {
   */
 
   // update game state on click
-  const updateGameState = (id) => {
+  const reportClick = (id) => {
     const index = Number(id);
     let isNewClick;
     let resetGameState;
@@ -94,20 +100,28 @@ const Game = ({ updateScore }) => {
 
     updateScore(isNewClick);
 
+    let updateGameState;
+
     if (resetGameState) {
-      setGameState(images);
+      updateGameState = () => setGameState(images);
     } else {
-      setGameState((prevGameState) => {
-        const newGameState = [...prevGameState];
-        newGameState[index] = {
-          ...prevGameState[index],
-          clicked: true,
-        };
-        return newGameState;
-      });
+      updateGameState = () =>
+        setGameState((prevGameState) => {
+          const newGameState = [...prevGameState];
+          newGameState[index] = {
+            ...prevGameState[index],
+            clicked: true,
+          };
+          return newGameState;
+        });
     }
 
-    resetTileSet();
+    // TODO: Add color immediately
+    setTimeout(() => setOpacity("0%"), 190);
+    setTimeout(() => {
+      updateGameState();
+      resetTileSet();
+    }, 230);
   };
 
   const gameStyle = {
@@ -124,7 +138,8 @@ const Game = ({ updateScore }) => {
             key={`album-${album.id}`}
             src={album.default}
             albumId={album.id}
-            reportClick={updateGameState}
+            reportClick={reportClick}
+            opacity={opacity}
           />
         );
       })}
