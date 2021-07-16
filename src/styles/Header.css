@@ -1,43 +1,49 @@
 header {
   display: flex;
+  flex-direction: column;
   justify-content: space-between;
   align-items: center;
   background-color: blue;
   color: white;
 }
 
-header > * {
-  margin: 0 3rem;
-}
-
 h1 span {
   display: inline-block;
+}
+
+h1 {
+  margin: 0.5rem 1rem;
 }
 
 #scoreboard {
   background-color: white;
   border: 1px solid white;
   border-radius: 1rem;
+  margin: 1em;
   color: blue;
   padding: 0 3rem;
-  margin: 1rem;
+  align-self: stretch;
 }
 
-@media screen and (orientation: landscape) {
+#scoreboard > * {
+  margin: 0.5rem;
+}
+
+/* @media screen and (orientation: landscape) {
   header {
     flex-direction: row;
   }
-}
-@media screen and (orientation: portrait) {
+} */
+@media only screen and (min-width: 750px) {
   header {
-    flex-direction: column;
+    flex-direction: row;
   }
-  h1,
-  #scoreboard {
-    margin: 1em;
+
+  h1 {
+    margin-left: 3rem;
   }
-  #scoreboard {
-    align-self: stretch;
-    margin-top: 0;
+  #scoreboard > * {
+    margin-left: 0;
+    margin-right: 0;
   }
 }

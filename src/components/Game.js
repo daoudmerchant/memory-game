@@ -125,7 +125,7 @@ const Game = ({ updateScore }) => {
 
   return !tileSet ? null : (
     <div id="game" style={gameStyle}>
-      {tileSet.map((album) => {
+      {/* {tileSet.map((album) => {
         return (
           <Album
             key={`album-${album.id}`}
@@ -136,7 +136,7 @@ const Game = ({ updateScore }) => {
             filterColor={filterColor}
           />
         );
-      })}
+      })} */}
     </div>
   );
 };
