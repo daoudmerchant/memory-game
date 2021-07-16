@@ -12,6 +12,7 @@ const Game = ({ updateScore }) => {
   const [gameState, setGameState] = useState(images);
   const [tileSet, setTileSet] = useState(null);
   const [opacity, setOpacity] = useState("0%");
+  const [filterColor, setFilterColor] = useState(null);
   const gridCount = gridSize ** 2;
 
   // return random tile array
@@ -63,6 +64,7 @@ const Game = ({ updateScore }) => {
     }
   }, []);
 
+  // fade-in on render
   useEffect(() => {
     setOpacity("0%");
     setTimeout(() => setOpacity("100%"), 200);
@@ -85,47 +87,38 @@ const Game = ({ updateScore }) => {
   // update game state on click
   const reportClick = (id) => {
     const index = Number(id);
-    let isNewClick;
-    let resetGameState;
-
-    if (gameState[index].clicked === false) {
-      // hitherto unclicked
-      isNewClick = true;
-      resetGameState = false;
-    } else {
-      // previously clicked
-      isNewClick = false;
-      resetGameState = true;
-    }
-
-    updateScore(isNewClick);
-
-    let updateGameState;
-
-    if (resetGameState) {
-      updateGameState = () => setGameState(images);
-    } else {
-      updateGameState = () =>
-        setGameState((prevGameState) => {
+    const correctClick = gameState[index].clicked === false;
+    const isSuccessfulClick = correctClick ? true : false;
+    const resultClass = correctClick ? "success" : "failure";
+    const resetGameState = correctClick ? false : true;
+    const nextState = resetGameState
+      ? images
+      : (prevGameState) => {
           const newGameState = [...prevGameState];
           newGameState[index] = {
             ...prevGameState[index],
             clicked: true,
           };
           return newGameState;
-        });
-    }
+        };
 
-    // TODO: Add color immediately
-    setTimeout(() => setOpacity("0%"), 190);
+    updateScore(isSuccessfulClick);
+    setFilterColor({ [id]: resultClass });
+
+    // TODO: Improve transition animation logic
+
+    const fadeOutTimer = correctClick ? 250 : 900;
+    const resetBoardTimer = correctClick ? 350 : 1100;
+
+    setTimeout(() => setOpacity("0%"), fadeOutTimer);
     setTimeout(() => {
-      updateGameState();
+      setGameState(nextState);
+      setFilterColor(null);
       resetTileSet();
-    }, 230);
+    }, resetBoardTimer);
   };
 
   const gameStyle = {
-    // FIX: pop-in
     gridTemplateColumns: `repeat(${gridSize}, 1fr)`,
     gridTemplateRows: `repeat(${gridSize}, 1fr)`,
   };
@@ -140,6 +133,7 @@ const Game = ({ updateScore }) => {
             albumId={album.id}
             reportClick={reportClick}
             opacity={opacity}
+            filterColor={filterColor}
           />
         );
       })}

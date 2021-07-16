@@ -16,7 +16,7 @@ img {
   transition: 0.1s linear all;
 }
 
-img:hover {
+.clickableImg:hover {
   filter: opacity(50%);
 }
 
