@@ -10,6 +10,10 @@ header > * {
   margin: 0 3rem;
 }
 
+h1 span {
+  display: inline-block;
+}
+
 #scoreboard {
   background-color: white;
   border: 1px solid white;
@@ -17,4 +21,23 @@ header > * {
   color: blue;
   padding: 0 3rem;
   margin: 1rem;
+}
+
+@media screen and (orientation: landscape) {
+  header {
+    flex-direction: row;
+  }
+}
+@media screen and (orientation: portrait) {
+  header {
+    flex-direction: column;
+  }
+  h1,
+  #scoreboard {
+    margin: 1em;
+  }
+  #scoreboard {
+    align-self: stretch;
+    margin-top: 0;
+  }
 }
