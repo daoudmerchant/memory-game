@@ -11,16 +11,17 @@ const Game = ({ updateScore }) => {
 
   const [gameState, setGameState] = useState(images);
   const [tileSet, setTileSet] = useState(null);
+  const [correctCount, setCorrectCount] = useState(0);
   const [opacity, setOpacity] = useState("0%");
   const [filterColor, setFilterColor] = useState(null);
   const gridCount = gridSize ** 2;
+  const albumQuantity = Object.keys(gameState).length;
 
   // return random tile array
   const randomiseTiles = useCallback(
     (gridCount) => {
       console.log("Randomising Tiles");
 
-      const albumQuantity = Object.keys(gameState).length;
       let albumChoices = [];
       for (let i = 0; i < albumQuantity; i++) {
         albumChoices.push(i);
@@ -44,12 +45,14 @@ const Game = ({ updateScore }) => {
       // albumIndexes now array of random non-repeating indexes
 
       const albumSet = albumIndexes.map((id) => gameState[id]);
+
+      // TODO: Add logic for when no unclicked album remains
       // if (!albumSet.some((album) => !album.clicked)) {
       //   // not a single album unclicked
       // }
       return new Promise((resolve) => resolve(albumSet));
     },
-    [gameState]
+    [gameState, albumQuantity]
   );
 
   const resetTileSet = async () => {
@@ -87,10 +90,22 @@ const Game = ({ updateScore }) => {
   // update game state on click
   const reportClick = (id) => {
     const index = Number(id);
-    const correctClick = gameState[index].clicked === false;
-    const isSuccessfulClick = correctClick ? true : false;
-    const resultClass = correctClick ? "success" : "failure";
-    const resetGameState = correctClick ? false : true;
+    console.log(gameState[index].clicked);
+    const isCorrectClick = gameState[index].clicked === false;
+    const isWinningClick = isCorrectClick && correctCount === albumQuantity - 1;
+    const resultClass = isCorrectClick ? "success" : "failure";
+    /*
+      TODO: Add endgame logic
+
+      if the correctCount is albumQuantity - 1, this is the winning click
+      The game state will be reset
+
+      Therefore, the game resets
+      
+      - If the click was incorrect
+      - If it was the last possible successful click
+    */
+    const resetGameState = isCorrectClick && !isWinningClick ? false : true;
     const nextState = resetGameState
       ? images
       : (prevGameState) => {
@@ -102,13 +117,22 @@ const Game = ({ updateScore }) => {
           return newGameState;
         };
 
-    updateScore(isSuccessfulClick);
+    if (isWinningClick) {
+      alert("Congratulations, you win!");
+      setCorrectCount(0);
+    } else if (isCorrectClick) {
+      setCorrectCount((prevCorrectCount) => prevCorrectCount + 1);
+    } else {
+      // unsuccessful click
+      setCorrectCount(0);
+    }
+
+    updateScore(isCorrectClick);
     setFilterColor({ [id]: resultClass });
 
     // TODO: Improve transition animation logic
-
-    const fadeOutTimer = correctClick ? 250 : 900;
-    const resetBoardTimer = correctClick ? 350 : 1100;
+    const fadeOutTimer = isCorrectClick ? 250 : 900;
+    const resetBoardTimer = isCorrectClick ? 350 : 1100;
 
     setTimeout(() => setOpacity("0%"), fadeOutTimer);
     setTimeout(() => {
@@ -125,7 +149,7 @@ const Game = ({ updateScore }) => {
 
   return !tileSet ? null : (
     <div id="game" style={gameStyle}>
-      {/* {tileSet.map((album) => {
+      {tileSet.map((album) => {
         return (
           <Album
             key={`album-${album.id}`}
@@ -136,7 +160,7 @@ const Game = ({ updateScore }) => {
             filterColor={filterColor}
           />
         );
-      })} */}
+      })}
     </div>
   );
 };

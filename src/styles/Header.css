@@ -12,7 +12,8 @@ h1 span {
 }
 
 h1 {
-  margin: 0.5rem 1rem;
+  margin: 1rem 1rem 0;
+  font-size: 2rem;
 }
 
 #scoreboard {
@@ -29,19 +30,16 @@ h1 {
   margin: 0.5rem;
 }
 
-/* @media screen and (orientation: landscape) {
-  header {
-    flex-direction: row;
-  }
-} */
 @media only screen and (min-width: 750px) {
   header {
     flex-direction: row;
   }
 
   h1 {
-    margin-left: 3rem;
+    margin: 0 0 0 3rem;
+    font-size: 3rem;
   }
+
   #scoreboard > * {
     margin-left: 0;
     margin-right: 0;

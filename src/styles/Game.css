@@ -1,12 +1,9 @@
 #game {
-  /* TEST */
-  background-color: orange;
-
+  aspect-ratio: 1;
   display: block;
   margin: 0 auto;
-  position: absolute;
-  height: 100%;
-  aspect-ratio: 1;
+  max-height: 100%;
+  max-width: 100%;
   display: grid;
   transition: 0.3s linear all;
 }
@@ -20,8 +17,10 @@ img {
   transition: 0.1s linear all;
 }
 
-.clickableImg:hover {
-  filter: opacity(50%);
+@media (hover: hover) {
+  .clickableImg:hover {
+    filter: opacity(50%);
+  }
 }
 
 .success {
@@ -32,9 +31,4 @@ img {
 .failure {
   /* red hue */
   filter: grayscale(100%) sepia(100%) hue-rotate(320deg);
-}
-
-@media screen and (orientation: landscape) {
-}
-@media screen and (orientation: portrait) {
 }
