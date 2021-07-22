@@ -41,7 +41,7 @@ export default function App() {
     <div className="App">
       <Header score={score} highScore={highScore} completed={completed} />
       <main>
-        <Game updateScore={updateScore} />
+        <Game score={score} updateScore={updateScore} />
       </main>
     </div>
   );

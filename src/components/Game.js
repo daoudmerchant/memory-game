@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect } from "react";
 import Album from "./Album";
 import { images } from "../imageLoader";
 import "../styles/Game.css";
@@ -6,106 +6,99 @@ import "../styles/Game.css";
 // SET GRID SIZE (no. of tiles per length of square)
 const gridSize = 3;
 
-const Game = ({ updateScore }) => {
+const Game = React.memo(({ score, updateScore }) => {
   // console.log("Rendering the game"); // FIX?: Game rendered 10 times as loading state updates
 
   const [gameState, setGameState] = useState(images);
   const [tileSet, setTileSet] = useState(null);
-  const [correctCount, setCorrectCount] = useState(0);
   const [opacity, setOpacity] = useState("0%");
   const [filterColor, setFilterColor] = useState(null);
   const gridCount = gridSize ** 2;
   const albumQuantity = Object.keys(gameState).length;
 
+  const getRandomInteger = (max) => {
+    return Math.floor(Math.random() * max);
+  };
+
   // return random tile array
-  const randomiseTiles = useCallback(
-    (gridCount) => {
-      console.log("Randomising Tiles");
+  const randomiseTiles = (gridCount) => {
+    let albumChoices = [];
+    for (let i = 0; i < albumQuantity; i++) {
+      albumChoices.push(i);
+    }
+    // albumChoices now array of all available indexes
 
-      let albumChoices = [];
-      for (let i = 0; i < albumQuantity; i++) {
-        albumChoices.push(i);
+    let albumIndexes = [];
+    for (let j = 0; j < gridCount; j++) {
+      const newRandomNumber = getRandomInteger(albumChoices.length);
+      const newRandomIndex = albumChoices[newRandomNumber];
+      albumIndexes.push(newRandomIndex);
+      if (newRandomNumber < albumChoices.length - 1) {
+        // not the last item in the array
+        albumChoices[newRandomNumber] = albumChoices.pop();
+        // replace with last item of array
+      } else {
+        // last item of array
+        albumChoices.pop();
       }
-      // albumChoices now array of all available indexes
+    }
+    // albumIndexes now array of random non-repeating indexes
 
-      let albumIndexes = [];
-      for (let j = 0; j < gridCount; j++) {
-        const newRandomNumber = Math.floor(Math.random() * albumChoices.length);
-        const newRandomIndex = albumChoices[newRandomNumber];
-        albumIndexes.push(newRandomIndex);
-        if (newRandomNumber < albumChoices.length - 1) {
-          // not the last item in the array
-          albumChoices[newRandomNumber] = albumChoices.pop();
-          // replace with last item of array
-        } else {
-          // last item of array
-          albumChoices.pop();
-        }
-      }
-      // albumIndexes now array of random non-repeating indexes
-
-      const albumSet = albumIndexes.map((id) => gameState[id]);
-
-      // TODO: Add logic for when no unclicked album remains
-      // if (!albumSet.some((album) => !album.clicked)) {
-      //   // not a single album unclicked
-      // }
-      return new Promise((resolve) => resolve(albumSet));
-    },
-    [gameState, albumQuantity]
-  );
+    const albumSet = albumIndexes.map((id) => gameState[id]);
+    return new Promise((resolve) => resolve(albumSet));
+  };
 
   const resetTileSet = async () => {
     const newTileSet = await randomiseTiles(gridCount);
     setTileSet(newTileSet);
   };
 
-  // setTileSet after render to keep useState immutable
+  // FIRST RENDER
+  // - setTileSet to keep useState immutable
   useEffect(() => {
     if (!tileSet) {
       resetTileSet();
     }
   }, []);
 
-  // fade-in on render
+  // EACH RENDER
+  // - fade-in (FIX: rerender)
   useEffect(() => {
-    setOpacity("0%");
     setTimeout(() => setOpacity("100%"), 200);
   }, [gameState]);
 
-  /* TODO: report loading?
-  const [isLoaded, setIsLoaded] = useState(0);
-  const reportLoaded = () => {
-    setIsLoaded((prevIsLoaded) => {
-      console.log("Updating load count");
-      if (prevIsLoaded < gridCount) {
-        return prevIsLoaded + 1;
+  // - check if at least one album is unclicked and insert random unclicked album if not
+  useEffect(() => {
+    if (tileSet && !tileSet.some((album) => !album.clicked)) {
+      // tileSet set & not a single album unclicked
+      const unclickedAlbums = gameState.filter((album) => !album.clicked);
+      let clickedIndexes = [];
+      for (let k = 0; k < gridSize; k++) {
+        if (tileSet[k].clicked) {
+          clickedIndexes.push(k);
+        }
       }
-      return 1;
-    });
-  };
+      const replacedIndex =
+        clickedIndexes[getRandomInteger(clickedIndexes.length)];
+      const replacementAlbum =
+        unclickedAlbums[getRandomInteger(unclickedAlbums.length)];
+      setTileSet((prevTileSet) => {
+        const tileSetWithUnclicked = [...prevTileSet];
+        tileSetWithUnclicked[replacedIndex] = replacementAlbum;
+        return tileSetWithUnclicked;
+      });
+    }
+  }, [gameState, score, tileSet]);
 
-  */
+  // TODO: report loading?
 
   // update game state on click
   const reportClick = (id) => {
     const index = Number(id);
-    console.log(gameState[index].clicked);
     const isCorrectClick = gameState[index].clicked === false;
-    const isWinningClick = isCorrectClick && correctCount === albumQuantity - 1;
+    const isWinningClick = isCorrectClick && score === albumQuantity - 1;
     const resultClass = isCorrectClick ? "success" : "failure";
-    /*
-      TODO: Add endgame logic
-
-      if the correctCount is albumQuantity - 1, this is the winning click
-      The game state will be reset
-
-      Therefore, the game resets
-      
-      - If the click was incorrect
-      - If it was the last possible successful click
-    */
-    const resetGameState = isCorrectClick && !isWinningClick ? false : true;
+    const resetGameState = !isCorrectClick || isWinningClick ? true : false;
     const nextState = resetGameState
       ? images
       : (prevGameState) => {
@@ -114,26 +107,24 @@ const Game = ({ updateScore }) => {
             ...prevGameState[index],
             clicked: true,
           };
+          newGameState.map((album) =>
+            console.log(`${album.id} - ${album.clicked}`)
+          );
           return newGameState;
         };
-
-    if (isWinningClick) {
-      alert("Congratulations, you win!");
-      setCorrectCount(0);
-    } else if (isCorrectClick) {
-      setCorrectCount((prevCorrectCount) => prevCorrectCount + 1);
-    } else {
-      // unsuccessful click
-      setCorrectCount(0);
-    }
-
-    updateScore(isCorrectClick);
-    setFilterColor({ [id]: resultClass });
 
     // TODO: Improve transition animation logic
     const fadeOutTimer = isCorrectClick ? 250 : 900;
     const resetBoardTimer = isCorrectClick ? 350 : 1100;
 
+    // TODO: Improve win state alert
+    if (isWinningClick) {
+      alert("Congratulations, you win!");
+    }
+
+    // TODO: Prevent rerender on each state change
+    updateScore(isCorrectClick);
+    setFilterColor({ [id]: resultClass });
     setTimeout(() => setOpacity("0%"), fadeOutTimer);
     setTimeout(() => {
       setGameState(nextState);
@@ -163,6 +154,6 @@ const Game = ({ updateScore }) => {
       })}
     </div>
   );
-};
+});
 
 export default Game;
