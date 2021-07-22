@@ -107,9 +107,6 @@ const Game = React.memo(({ score, updateScore }) => {
             ...prevGameState[index],
             clicked: true,
           };
-          newGameState.map((album) =>
-            console.log(`${album.id} - ${album.clicked}`)
-          );
           return newGameState;
         };
 

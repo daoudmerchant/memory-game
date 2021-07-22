@@ -15,6 +15,6 @@ const importAll = (r) => {
   });
   return albums;
 };
-const images = importAll(require.context("./blue-note", false, /\.jpg$/));
+const images = importAll(require.context("./images", false, /\.jpg$/));
 
 export { images };
