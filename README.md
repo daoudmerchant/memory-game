@@ -41,7 +41,7 @@ This is begging for a `srcset`, but I wasn't ready for the complication it would
 
 ### Improve transition logic
 
-For now I just use fading in and out and `setTimeout` to stop image pop-in on load. Ideally each image should have something like `onLoad={props.reportLoad}` which only sets opacity to 1 on success, but I was getting random fires on the function when I tried it. Again, I'd need to fully understand how React works to debug, so I decided to put a pin in this until I'm more experienced.
+For now I just use fading in and out and `setTimeout` to mitigate image pop-in on load, which is still a problem (I could probably mitigate it further by tweaking my timeout delays, but this seems like putting a fresh coat of paint on a broken cart). Ideally each image should have something like `onLoad={props.reportLoad}` which only sets opacity to 1 on success, but I was getting random fires on the function when I tried it. Again, I'd need to fully understand how React works to debug, so I decided to put a pin in this until I'm more experienced and accept that it's a side effect of having chosen a large pool of pictures.
 
 ### Improve user experience
 
